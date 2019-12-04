@@ -10,16 +10,17 @@ blogsRouter.get('/', async (request, response) => {
   }
 });
 
-blogsRouter.post('/', (request, response) => {
+blogsRouter.post('/', async (request, response) => {
   console.log('request.body: ', request.body);
   const blog = new Blog(request.body);
-
-  blog
-    .save()
-    .then((result) => {
-      console.log('result: ', result);
-      response.status(201).json(result);
-    });
+  try {
+    const result = await blog.save();
+    console.log('result: ', result);
+    response.status(201).json(result);
+  } catch (error) {
+    console.log('error: ', error.message);
+    response.status(500).end();
+  }
 });
 
 module.exports = blogsRouter;
