@@ -6,7 +6,7 @@ const User = require('../models/user');
 
 usersRouter.get('/', async (request, response) => {
   try {
-    const result = await User.find({});
+    const result = await User.find({}).populate('blogs', { title: 1, url: 1, likes: 1 });
     response.json(result);
   } catch (error) {
     console.log(error.message);
