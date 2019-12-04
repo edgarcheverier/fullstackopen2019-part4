@@ -11,14 +11,22 @@ blogsRouter.get('/', async (request, response) => {
 });
 
 blogsRouter.post('/', async (request, response) => {
-  console.log('request.body: ', request.body);
   const blog = new Blog(request.body);
   try {
     const result = await blog.save();
-    console.log('result: ', result);
     response.status(201).json(result);
   } catch (error) {
     console.log('error: ', error.message);
+    response.status(500).end();
+  }
+});
+
+blogsRouter.delete('/:id', async (request, response) => {
+  try {
+    await Blog.findByIdAndDelete(request.params.id);
+    response.status(204).end();
+  } catch (error) {
+    console.log(error.message);
     response.status(500).end();
   }
 });

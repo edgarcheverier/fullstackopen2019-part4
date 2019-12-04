@@ -16,37 +16,59 @@ beforeEach(async () => {
   await Promise.all(promiseArray);
 });
 
-test('blogs are returned as json', async () => {
-  await api
-    .get(apiURL)
-    .expect(200)
-    .expect('Content-Type', /application\/json/);
+describe('Get all the blogs', () => {
+  test('blogs are returned as json', async () => {
+    await api
+      .get(apiURL)
+      .expect(200)
+      .expect('Content-Type', /application\/json/);
+  });
+
+  test('returned correct amount of blogs', async () => {
+    const response = await api.get(apiURL);
+    expect(response.body.length).toBe(helper.initialBlogs.length);
+  });
 });
 
-test('returned correct amount of blogs', async () => {
-  const response = await api.get(apiURL);
-  expect(response.body.length).toBe(helper.initialBlogs.length);
+describe('Post Blog', () => {
+  test('new blog can be added to the DB', async () => {
+    const newBlog = {
+      title: 'Test blog 100',
+      author: 'Edgar Cheverier',
+      url: 'https://www.google.com/',
+      likes: 8,
+    };
+
+    await api
+      .post(apiURL)
+      .send(newBlog)
+      .expect(201)
+      .expect('Content-Type', /application\/json/);
+
+    const response = await api.get(apiURL);
+    expect(response.body.length).toBe(helper.initialBlogs.length + 1);
+
+    const contents = response.body.map((ele) => ele.title);
+    expect(contents).toContain('Test blog 100');
+  });
 });
 
-test('new blog can be added to the DB', async () => {
-  const newBlog = {
-    title: 'Test blog 100',
-    author: 'Edgar Cheverier',
-    url: 'https://www.google.com/',
-    likes: 8,
-  };
+describe('Delete Blog', () => {
+  test('can delete a blog from the DB', async () => {
+    const responseBeforeDelete = await api.get(apiURL);
+    const blogForDeleteId = responseBeforeDelete.body[0].id;
+    const blogForDeleteTitle = responseBeforeDelete.body[0].title;
 
-  await api
-    .post(apiURL)
-    .send(newBlog)
-    .expect(201)
-    .expect('Content-Type', /application\/json/);
+    await api
+      .delete(`${apiURL}/${blogForDeleteId}`)
+      .expect(204);
 
-  const response = await api.get(apiURL);
-  expect(response.body.length).toBe(helper.initialBlogs.length + 1);
+    const response = await api.get(apiURL);
+    expect(response.body.length).toBe(helper.initialBlogs.length - 1);
 
-  const contents = response.body.map((ele) => ele.title);
-  expect(contents).toContain('Test blog 100');
+    const contents = response.body.map((ele) => ele.title);
+    expect(contents).not.toContain(blogForDeleteTitle);
+  });
 });
 
 afterAll(() => {
