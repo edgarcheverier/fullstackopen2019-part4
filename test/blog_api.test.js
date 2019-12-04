@@ -71,6 +71,30 @@ describe('Delete Blog', () => {
   });
 });
 
+describe('Put Blog', () => {
+  test('update the amount of likes in a blog', async () => {
+    const responseBeforeUpdate = await api.get(apiURL);
+    const blogForUpdateId = responseBeforeUpdate.body[0].id;
+    const blogForUpdateLikes = responseBeforeUpdate.body[0].likes;
+    const blogToUpdate = {
+      title: responseBeforeUpdate.body[0].title,
+      author: responseBeforeUpdate.body[0].author,
+      url: responseBeforeUpdate.body[0].url,
+      likes: blogForUpdateLikes + 1,
+    };
+
+    await api
+      .put(`${apiURL}/${blogForUpdateId}`)
+      .send(blogToUpdate)
+      .expect(200)
+      .expect('Content-Type', /application\/json/);
+
+    const response = await api.get(apiURL);
+    const updatedBlog = response.body.find((ele) => ele.id === blogForUpdateId);
+    expect(updatedBlog.likes).toBe(blogForUpdateLikes + 1);
+  });
+});
+
 afterAll(() => {
   mongoose.connection.close();
 });

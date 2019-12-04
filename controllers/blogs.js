@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 const blogsRouter = require('express').Router();
 const Blog = require('../models/blog');
 
@@ -28,6 +29,23 @@ blogsRouter.delete('/:id', async (request, response) => {
   } catch (error) {
     console.log(error.message);
     response.status(500).end();
+  }
+});
+
+blogsRouter.put('/:id', async (request, response) => {
+  try {
+    const updatedBlog = {
+      title: request.body.title,
+      author: request.body.author,
+      url: request.body.url,
+      likes: request.body.likes,
+    };
+    const result = await Blog.findByIdAndUpdate(request.params.id, updatedBlog, { new: true });
+    if (result) return response.json(result);
+    response.status(404).end();
+  } catch (error) {
+    console.log(error.message);
+    response.status(404).end();
   }
 });
 
